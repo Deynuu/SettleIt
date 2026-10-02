@@ -10,7 +10,7 @@ function statusName(tx: any): string {
 
 export async function fetchTx(hash: `0x${string}`): Promise<TxSnapshot> {
   try {
-    const tx: any = await getReadClient().getTransaction({ hash });
+    const tx: any = await getReadClient().getTransaction({ hash: hash as never });
     const name = statusName(tx);
     const exec = String(tx?.txExecutionResultName ?? "");
     const decided = !!name && !["PENDING", "PROPOSING", "COMMITTING", "REVEALING", "LEADER_REVEALING", "UNINITIALIZED", "ACTIVATED"].includes(name.toUpperCase());
