@@ -1,0 +1,1 @@
+export const studionet = { id: 61999, name: "Genlayer Studio Network", rpcUrls: { default: { http: ["https://studio.genlayer.com/api"] } }, nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 }, blockExplorers: { default: { url: "https://x" } } };

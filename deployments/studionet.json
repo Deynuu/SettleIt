@@ -1,0 +1,12 @@
+{
+  "network": "studionet",
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "status": "DEPLOYED_UNVERIFIED",
+  "contractAddress": "0x7BaDaceAeD80bF571562359E3De02aA1eA8846d8",
+  "deployTxHash": null,
+  "deployedAt": null,
+  "contractFile": "contracts/settleit.py",
+  "contractSha256": "0301e264eaaf0efec89c2c57be018d30d83c362b84a5561c9305253b20bb6629",
+  "note": "Address supplied by the user after a manual deploy via Studio. deployTxHash not provided (left null, never invented). Not yet verified by schema inspection or live smoke test."
+}

@@ -1,0 +1,13 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { writeFileSync, readFileSync } from "node:fs";
+import { VerdictReveal } from "@/components/VerdictReveal";
+import { TxTracker } from "@/components/TxTracker";
+import { CaseCard } from "@/components/CaseCard";
+import { lifecycleFromStatus } from "@/lib/settleit/protocol";
+const A = "0x" + "a1".repeat(20), B = "0x" + "b2".repeat(20);
+const v = { exists: true, version: 1, favoredParty: "CLAIMANT" as const, claimantFault: 20, respondentFault: 80, confidence: "HIGH" as const, evidenceQuality: "STRONG" as const, reasonCodes: ["EXPLICIT_BOUNDARY_IGNORED", "PRIOR_NORM_OVERRIDDEN"], summary: "The parties may normally share food, but the specific message created a clear exception before the food was taken.", remedy: "Replace the chicken and add dessert." };
+const c = { id: 1, claimant: A, respondent: B, category: "ROOMMATES" as const, visibility: "PUBLIC" as const, title: "The Chicken in the Fridge", question: "Was the respondent wrong for eating food after being explicitly told not to touch it?", status: "VERDICT_RECORDED" as const, hasVerdict: true, favoredParty: "CLAIMANT" as const, totalVotes: 7 };
+const html = renderToStaticMarkup(<div className="wrap stack" style={{ paddingTop: 16 }}><h1>GOT AN ARGUMENT? <span>SETTLEIT.</span></h1><CaseCard c={c} /><VerdictReveal v={v} finalized={false} /><TxTracker lifecycle={lifecycleFromStatus("ACCEPTED")} hash={"0x" + "ab".repeat(32)} /><div className="vote-opts"><button className="btn ghost">Claimant is right</button><button className="btn ghost">Respondent is right</button><button className="btn ghost">Both share the blame</button><button className="btn ghost">Not enough info</button></div><button className="btn block">Sign &amp; file the case</button></div>);
+const css = readFileSync("../app/globals.css", "utf8");
+writeFileSync("out.html", `<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><style>${css}</style><body>${html}`);
+console.log("rendered", html.length);

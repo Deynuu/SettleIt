@@ -1,0 +1,10 @@
+{
+  "name": "Settleit",
+  "short_name": "Settleit",
+  "description": "Two sides. One dispute. Let the jury settle it.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07040D",
+  "theme_color": "#D9FF3F",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
