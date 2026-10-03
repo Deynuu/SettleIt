@@ -652,6 +652,21 @@ def _build_prompt(material_json: str, fetched_json: str, review: bool) -> str:
     )
 
 
+def _run_model(material_json: str, sources: list, review: bool) -> dict:
+    """One adjudication model call over frozen material + fetched pages."""
+    fetched = [
+        {"url": s["url"], "sha256": s["sha256"], "page_text": s["text"]}
+        for s in sources
+    ]
+    fetched_json = json.dumps(_isolate(fetched), sort_keys=True)
+    prompt = _build_prompt(material_json, fetched_json, review)
+    try:
+        raw = gl.nondet.exec_prompt(prompt)
+    except Exception:
+        raise gl.vm.UserError("TRANSIENT:LLM_UNAVAILABLE")
+    return _normalize_verdict(raw)
+
+
 def _parse_evidence_json(evidence_json: str, max_items: int) -> list:
     """Validate an evidence array (JSON string). Returns list of (kind, content, caption)."""
     text = evidence_json.strip()
@@ -863,22 +878,9 @@ class Settleit(gl.Contract):
             raise gl.vm.UserError("EXPECTED:TOO_MANY_URLS")
         material_json = json.dumps(_isolate(material), sort_keys=True)
 
-        def run_model(sources: list) -> dict:
-            fetched = [
-                {"url": s["url"], "sha256": s["sha256"], "page_text": s["text"]}
-                for s in sources
-            ]
-            fetched_json = json.dumps(_isolate(fetched), sort_keys=True)
-            prompt = _build_prompt(material_json, fetched_json, review)
-            try:
-                raw = gl.nondet.exec_prompt(prompt)
-            except Exception:
-                raise gl.vm.UserError("TRANSIENT:LLM_UNAVAILABLE")
-            return _normalize_verdict(raw)
-
         def leader_fn() -> dict:
             got = _fetch_sources(urls)
-            v = run_model(got["sources"])
+            v = _run_model(material_json, got["sources"], review)
             v["evidence_digest"] = got["digest"]
             v["evidence_sources"] = [
                 {"url": s["url"], "sha256": s["sha256"]} for s in got["sources"]
@@ -906,7 +908,7 @@ class Settleit(gl.Contract):
                 got = _fetch_sources(urls)
                 if their_digest != got["digest"]:
                     return False
-                mine = run_model(got["sources"])
+                mine = _run_model(material_json, got["sources"], review)
             except Exception:
                 return False
             return _substantively_equivalent(theirs, mine)
