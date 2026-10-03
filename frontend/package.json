@@ -11,20 +11,23 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit && node scripts/lint.mjs",
     "test": "tsx --test \"lib/**/*.test.ts\"",
-    "check:address": "node ../scripts/check-address-consistency.mjs"
+    "check:address": "node scripts/check-address-consistency.mjs"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.90.5",
-    "genlayer-js": "^1.1.8",
-    "next": "^16.2.11",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "@tanstack/react-query": "5.90.5",
+    "genlayer-js": "1.1.8",
+    "next": "16.2.11",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
   },
   "devDependencies": {
-    "@types/node": "^24.9.1",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
-    "tsx": "^4.20.0",
-    "typescript": "^5.9.3"
+    "@types/node": "24.9.1",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "tsx": "4.20.0",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": "22.12.0"
   }
 }
