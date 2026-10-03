@@ -53,9 +53,14 @@ def test_adjacent_evidence_quality_and_confidence_agree(court):
     assert agree(court, verdict_dict(evidence_quality="MIXED", confidence_bucket="MEDIUM")) is True
 
 
-def test_single_shared_reason_code_is_enough(court):
-    other = verdict_dict(reason_codes=["PRIOR_NORM_OVERRIDDEN", "CLAIM_CORROBORATED"])
+def test_secondary_reason_codes_are_not_consensus_bound(court):
+    other = verdict_dict(reason_codes=["CLAIM_CORROBORATED", "MATERIAL_ADMISSION"])
     assert agree(court, other) is True
+
+
+def test_different_primary_reason_rejected(court):
+    other = verdict_dict(primary_reason="CLAIM_CORROBORATED")
+    assert agree(court, other) is False
 
 
 # -- disagreement -------------------------------------------------------------
@@ -75,8 +80,8 @@ def test_score_exactly_at_tolerance_agrees(court):
     assert agree(court, verdict_dict(claimant_fault=30, respondent_fault=70)) is True
 
 
-def test_no_reason_code_overlap_rejected(court):
-    other = verdict_dict(reason_codes=["CLAIM_CORROBORATED", "MATERIAL_ADMISSION"])
+def test_no_primary_reason_match_rejected(court):
+    other = verdict_dict(primary_reason="CLAIM_CORROBORATED", reason_codes=["MATERIAL_ADMISSION"])
     assert agree(court, other) is False
 
 
@@ -105,6 +110,7 @@ INCONCLUSIVE_A = verdict_dict(
     confidence_bucket="LOW",
     evidence_quality="WEAK",
     reason_codes=["INSUFFICIENT_INFORMATION"],
+    insufficiency_basis="MISSING_EVIDENCE",
 )
 
 

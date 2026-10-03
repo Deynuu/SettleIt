@@ -45,7 +45,8 @@ def verdict_dict(**over):
         "respondent_fault": 80,
         "confidence_bucket": "HIGH",
         "evidence_quality": "STRONG",
-        "reason_codes": ["EXPLICIT_BOUNDARY_IGNORED", "PRIOR_NORM_OVERRIDDEN"],
+        "primary_reason": "EXPLICIT_BOUNDARY_IGNORED",
+        "reason_codes": ["PRIOR_NORM_OVERRIDDEN"],
         "summary": (
             "The parties may normally share food, but the specific message created "
             "a clear exception before the food was taken."

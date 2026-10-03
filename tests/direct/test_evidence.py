@@ -105,7 +105,7 @@ def test_unsupported_evidence_type_rejected(court):
 def test_url_evidence_must_be_http(court):
     cid = court.create()
     court.vm.sender = court.alice
-    with court.vm.expect_revert("EXPECTED:INVALID_EVIDENCE"):
+    with court.vm.expect_revert("EXPECTED:INVALID_URL"):
         court.c.add_evidence(cid, "URL", "javascript:alert(1)", "bad")
 
 

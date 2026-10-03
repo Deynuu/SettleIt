@@ -110,6 +110,7 @@ def test_inconclusive_verdict_matches_not_enough_info_votes(court):
             confidence_bucket="LOW",
             evidence_quality="WEAK",
             reason_codes=["INSUFFICIENT_INFORMATION"],
+            insufficiency_basis="MISSING_EVIDENCE",
         )
     )
     court.vote(cid, court.charlie, "INSUFFICIENT")
