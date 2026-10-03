@@ -13,6 +13,10 @@ import type {
   ConfidenceBucket,
   Evidence,
   EvidenceKind,
+  EvidenceSource,
+  HistoryEvent,
+  InsufficiencyBasis,
+  ProtocolInfo,
   EvidenceQuality,
   FavoredParty,
   Party,
@@ -54,7 +58,8 @@ function oneOf<T extends string>(v: unknown, allowed: readonly T[]): T | null {
 }
 
 const CATEGORY_IDS = ["RELATIONSHIPS", "FRIENDS", "ROOMMATES", "FAMILY", "MONEY", "WORK", "GAMING", "CRYPTO", "PETTY"] as const;
-const STATUSES = ["AWAITING_RESPONSE", "READY", "VERDICT_RECORDED"] as const;
+const STATUSES = ["AWAITING_RESPONSE", "READY", "VERDICT_RECORDED", "REVIEWED", "EXPIRED"] as const;
+const BASES = ["MISSING_EVIDENCE", "CONTRADICTORY_EVIDENCE", "UNVERIFIABLE_CLAIMS", "AMBIGUOUS_TERMS", "NONE"] as const;
 const FAVORED = ["CLAIMANT", "RESPONDENT", "SPLIT", "INCONCLUSIVE"] as const;
 const CONFIDENCE = ["LOW", "MEDIUM", "HIGH"] as const;
 const QUALITY = ["WEAK", "MIXED", "STRONG"] as const;
@@ -74,6 +79,8 @@ export function parseCaseSummary(raw: unknown): CaseSummary {
     question: str(r.question),
     status,
     hasVerdict: bool(r.has_verdict),
+    hasReview: bool(r.has_review),
+    operativeRound: num(r.operative_round),
     favoredParty: oneOf(r.favored_party, FAVORED),
     totalVotes: num(r.total_votes),
   };
@@ -93,7 +100,13 @@ export function parseCaseDetail(raw: unknown): CaseDetail {
     responded: bool(r.responded),
     claimantEvidenceCount: num(r.claimant_evidence_count),
     respondentEvidenceCount: num(r.respondent_evidence_count),
+    evidenceTotal: num(r.evidence_total),
     verdictVersion: num(r.verdict_version),
+    createdAt: str(r.created_at),
+    responseDeadline: num(r.response_deadline),
+    reviewRequestedBy: r.review_requested_by === "CLAIMANT" || r.review_requested_by === "RESPONDENT" ? r.review_requested_by : null,
+    reviewGrounds: str(r.review_grounds),
+    eventCount: num(r.event_count),
   };
 }
 
@@ -107,6 +120,7 @@ export function parseEvidenceList(raw: unknown): Evidence[] {
     return {
       id: num(r.id),
       caseId: num(r.case_id),
+      round: num(r.round, 1),
       party,
       kind,
       content: str(r.content),
@@ -115,37 +129,60 @@ export function parseEvidenceList(raw: unknown): Evidence[] {
   });
 }
 
+const EMPTY_VERDICT: Verdict = {
+  exists: false, round: 0, version: 0, requestedBy: "", recordedAt: "", favoredParty: null,
+  claimantFault: 0, respondentFault: 0, confidence: null, evidenceQuality: null, primaryReason: "",
+  insufficiencyBasis: null, evidenceDigest: "", evidenceSources: [], secondaryReasonCodes: [],
+  summary: "", remedy: "", nonAuthoritativeFields: [], reasonCodes: [],
+};
+
+const strList = (v: unknown): string[] => (Array.isArray(v) ? v.filter((c): c is string => typeof c === "string") : []);
+
 export function parseVerdict(raw: unknown): Verdict {
   const r = asRec(raw);
-  if (!bool(r.exists)) {
-    return {
-      exists: false,
-      version: 0,
-      favoredParty: null,
-      claimantFault: 0,
-      respondentFault: 0,
-      confidence: null,
-      evidenceQuality: null,
-      reasonCodes: [],
-      summary: "",
-      remedy: "",
-    };
-  }
-  const codes = Array.isArray(r.reason_codes) ? r.reason_codes.filter((c): c is string => typeof c === "string") : [];
-  const confidence: ConfidenceBucket | null = oneOf(r.confidence_bucket, CONFIDENCE);
-  const quality: EvidenceQuality | null = oneOf(r.evidence_quality, QUALITY);
-  const favored: FavoredParty | null = oneOf(r.favored_party, FAVORED);
+  if (!bool(r.exists)) return { ...EMPTY_VERDICT, round: num(r.round) };
+  const sources: EvidenceSource[] = Array.isArray(toPlain(r.evidence_sources))
+    ? (toPlain(r.evidence_sources) as unknown[]).map((s) => { const o = asRec(s); return { url: str(o.url), sha256: str(o.sha256) }; })
+    : [];
+  const primary = str(r.primary_reason);
+  const secondary = strList(r.secondary_reason_codes);
   return {
     exists: true,
+    round: num(r.round, 1),
     version: num(r.version),
-    favoredParty: favored,
+    requestedBy: str(r.requested_by),
+    recordedAt: str(r.recorded_at),
+    favoredParty: oneOf(r.favored_party, FAVORED),
     claimantFault: num(r.claimant_fault),
     respondentFault: num(r.respondent_fault),
-    confidence,
-    evidenceQuality: quality,
-    reasonCodes: codes,
+    confidence: oneOf(r.confidence_bucket, CONFIDENCE),
+    evidenceQuality: oneOf(r.evidence_quality, QUALITY),
+    primaryReason: primary,
+    insufficiencyBasis: oneOf(r.insufficiency_basis, BASES) as InsufficiencyBasis | null,
+    evidenceDigest: str(r.evidence_digest),
+    evidenceSources: sources,
+    secondaryReasonCodes: secondary,
     summary: str(r.summary),
     remedy: str(r.remedy),
+    nonAuthoritativeFields: strList(r.non_authoritative_fields),
+    reasonCodes: primary ? [primary, ...secondary] : secondary,
+  };
+}
+
+export function parseHistory(raw: unknown): HistoryEvent[] {
+  const p = toPlain(raw);
+  if (!Array.isArray(p)) return [];
+  return p.map((x) => { const r = asRec(x); return { seq: num(r.seq), action: str(r.action), actor: str(r.actor), at: str(r.at), detail: str(r.detail) }; });
+}
+
+export function parseProtocolInfo(raw: unknown): ProtocolInfo {
+  const r = asRec(raw);
+  return {
+    contractVersion: str(r.contract_version),
+    adminPowers: bool(r.admin_powers, true),
+    verdictOverridePossible: bool(r.verdict_override_possible, true),
+    communityVotesAuthoritative: bool(r.community_votes_authoritative, true),
+    responseWindowSeconds: num(r.response_window_seconds),
   };
 }
 
@@ -158,5 +195,6 @@ export function parseVoteSummary(raw: unknown): VoteSummary {
     insufficient: num(r.insufficient),
     total: num(r.total),
     juryMatchPct: typeof r.jury_match_pct === "number" ? r.jury_match_pct : null,
+    authoritative: bool(r.authoritative, false),
   };
 }

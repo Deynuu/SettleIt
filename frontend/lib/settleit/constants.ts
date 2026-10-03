@@ -8,6 +8,9 @@ export const LIMITS = {
   evidencePerSide: 5,
   evidenceCaption: 240,
   evidenceContent: 1000,
+  url: 300,
+  reviewGrounds: 600,
+  reviewEvidence: 3,
   summary: 800,
   remedy: 240,
   feedPage: 20,
@@ -76,6 +79,21 @@ export const REASON_CODE_LABEL: Record<string, string> = {
   INSUFFICIENT_INFORMATION: "Insufficient information",
 };
 
+export const BASIS_LABEL: Record<string, string> = {
+  MISSING_EVIDENCE: "Missing evidence",
+  CONTRADICTORY_EVIDENCE: "Contradictory evidence",
+  UNVERIFIABLE_CLAIMS: "Unverifiable claims",
+  AMBIGUOUS_TERMS: "Ambiguous terms",
+};
+
+export const STATUS_LABEL: Record<string, string> = {
+  AWAITING_RESPONSE: "Awaiting response",
+  READY: "Ready for the jury",
+  VERDICT_RECORDED: "Verdict recorded",
+  REVIEWED: "Reviewed",
+  EXPIRED: "Expired (no response)",
+};
+
 export const COPY = {
   heroLine1: "GOT AN ARGUMENT?",
   heroLine2: "SETTLEIT.",
@@ -96,7 +114,15 @@ export const COPY = {
     "Settleit is for social adjudication and entertainment. The jury evaluates only the material submitted to the case. Do not post secrets, private identifying information, or intimate content.",
   sensitive: "Settleit is not an emergency, legal, medical, or safety service.",
   jurisdiction:
-    "The jury decides from the material submitted to this case. It does not independently know what happened offline.",
+    "The jury decides from the material submitted to this case and the link text validators fetched at verdict time. It does not independently know what happened offline, and it cannot confirm that a page is authentic or true.",
+  nonAuthoritative:
+    "Not consensus-bound: this part was written by the leader model. Validators did not compare it, so treat it as a suggestion, not part of the ruling.",
+  consensusBound:
+    "Consensus-bound: GenLayer validators had to independently reach an equivalent result on these fields.",
+  votesNonAuthoritative:
+    "Community votes are for fun and sentiment. They never change, replace or influence the GenLayer verdict.",
+  linkEvidence:
+    "Links must be https and public. When a verdict is requested, every validator fetches the page text itself and the SHA-256 digest of what they saw is recorded with the verdict. If a page can't be fetched, is empty, or differs between validators, no verdict is recorded.",
   walletWhy: "Your wallet signs the case so neither side can silently rewrite it.",
   unlisted:
     "Unlisted means not featured in the browse feed. Anyone with the link — or anyone inspecting the chain — can still read it.",

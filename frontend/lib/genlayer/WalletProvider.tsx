@@ -7,6 +7,8 @@ interface WalletState {
   account: `0x${string}` | null;
   hasProvider: boolean;
   onStudionet: boolean;
+  /** Live chain id reported by the wallet (hex), or null. */
+  chainHex: string | null;
   busy: boolean;
   error: string | null;
   connect: () => Promise<void>;
@@ -61,7 +63,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }), [run]);
 
   const value = useMemo<WalletState>(() => ({
-    account, hasProvider, onStudionet: isOnStudionet(chain), busy, error,
+    account, hasProvider, onStudionet: isOnStudionet(chain), chainHex: chain, busy, error,
     connect, switchNetwork, disconnect: () => setAccount(null),
   }), [account, chain, hasProvider, busy, error, connect, switchNetwork]);
 

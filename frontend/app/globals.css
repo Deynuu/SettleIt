@@ -124,3 +124,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { border-color
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* build / provenance info */
+.buildinfo { font-size: .8rem; margin: 0; display: grid; gap: .25rem; overflow-wrap: anywhere; }
+.buildinfo div { display: flex; flex-wrap: wrap; gap: .5rem; }
+.buildinfo dt { opacity: .7; min-width: 11rem; }
+.buildinfo dd { margin: 0; }

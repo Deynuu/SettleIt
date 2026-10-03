@@ -5,7 +5,7 @@ import { compareHumansToJury } from "./compare";
 import { validateRespondent, validateEvidence, evidenceToJson } from "./validation";
 
 const votes = (c: number, r: number, s: number, i: number) => ({
-  claimant: c, respondent: r, split: s, insufficient: i, total: c + r + s + i, juryMatchPct: null,
+  claimant: c, respondent: r, split: s, insufficient: i, total: c + r + s + i, juryMatchPct: null, authoritative: false,
 });
 
 test("humanizeError maps contract codes", () => {

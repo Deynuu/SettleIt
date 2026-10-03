@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { COPY } from "@/lib/settleit/constants";
 import { useFeed } from "@/lib/genlayer/hooks";
 import { CONTRACT_ADDRESS } from "@/lib/genlayer/config";
 import { CaseCard } from "@/components/CaseCard";
 
 export default function Home() {
-  const feed = useFeed(20);
+  const [page, setPage] = useState(0);
+  const feed = useFeed(page, 20);
   return (
     <div className="stack">
       <section className="stack">
@@ -26,7 +28,14 @@ export default function Home() {
         ) : feed.isError ? (
           <p className="err" role="alert">Couldn’t load cases from StudioNet. <button className="btn ghost" onClick={() => feed.refetch()}>Retry</button></p>
         ) : feed.data && feed.data.rows.length ? (
-          <div className="grid two">{feed.data.rows.map((c) => <CaseCard key={c.id} c={c} />)}</div>
+          <>
+            <div className="grid two">{feed.data.rows.map((c) => <CaseCard key={c.id} c={c} />)}</div>
+            <div className="row">
+              <button className="btn ghost" disabled={page === 0} onClick={() => setPage(page - 1)}>Newer</button>
+              <span className="muted">Page {page + 1} · {feed.data.total} public cases</span>
+              <button className="btn ghost" disabled={!feed.data.hasMore} onClick={() => setPage(page + 1)}>Older</button>
+            </div>
+          </>
         ) : (
           <div className="panel"><h3>No public cases yet.</h3><p className="muted">Be the first to start one.</p></div>
         )}

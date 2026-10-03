@@ -7,7 +7,7 @@ const RULES = [
   [/dangerouslySetInnerHTML/, "dangerouslySetInnerHTML is forbidden (untrusted on-chain text)"],
   [/\b(supabase|firebase|firestore|mongoose|prisma|axios)\b/i, "backend/DB dependency or reference is forbidden"],
   [/\bprivate case\b|"Private"|>Private</i, "use Public/Unlisted, never 'private'"],
-  [/process\.env\.(?!NEXT_PUBLIC_CONTRACT_ADDRESS|NODE_ENV)\w*/, "only NEXT_PUBLIC_CONTRACT_ADDRESS may be read from env"],
+  [/process\.env\.(?!NEXT_PUBLIC_CONTRACT_ADDRESS|NEXT_PUBLIC_BUILD_COMMIT|NEXT_PUBLIC_BUILD_TIME|NODE_ENV)\w*/, "only NEXT_PUBLIC_CONTRACT_ADDRESS / NEXT_PUBLIC_BUILD_COMMIT may be read from env"],
   [/0x[0-9a-fA-F]{40}(?![0-9a-fA-F])/, "hardcoded address in source (use NEXT_PUBLIC_CONTRACT_ADDRESS)"],
   [/\bappeal(s)?\b.{0,40}\b\d+\s*(s|sec|min|hour|h)\b/i, "hardcoded appeal countdown is forbidden"],
 ];

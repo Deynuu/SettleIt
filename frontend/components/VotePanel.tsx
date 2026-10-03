@@ -1,12 +1,13 @@
 "use client";
 import { useWallet } from "@/lib/genlayer/WalletProvider";
 import { useMyVote, useTxFlow, useVotes } from "@/lib/genlayer/hooks";
-import { castVote } from "@/lib/genlayer/contract";
+import { voteSpec } from "@/lib/genlayer/contract";
 import { VOTE_OPTIONS } from "@/lib/settleit/constants";
 import { compareHumansToJury } from "@/lib/settleit/compare";
 import { sameAddress } from "@/lib/settleit/format";
 import type { CaseDetail, VoteChoice, Verdict } from "@/lib/settleit/types";
 import { TxTracker } from "./TxTracker";
+import { COPY } from "@/lib/settleit/constants";
 
 export function VotePanel({ c, verdict }: { c: CaseDetail; verdict: Verdict | undefined }) {
   const w = useWallet();
@@ -20,15 +21,16 @@ export function VotePanel({ c, verdict }: { c: CaseDetail; verdict: Verdict | un
 
   const vote = (choice: VoteChoice) => {
     if (!w.account) return;
-    void flow.run(() => castVote(w.account!, c.id, choice));
+    void flow.start(voteSpec(w.account!, c.id, choice));
   };
   const total = v?.total ?? 0;
   const pct = (n: number) => (total ? Math.round((n * 100) / total) : 0);
 
   return (
     <section className="panel stack" aria-label="Community vote">
-      <div className="eyebrow">Community vote</div>
+      <div className="eyebrow">Community vote · non-authoritative</div>
       <h2>What do humans think?</h2>
+      <p className="hint" data-testid="votes-nonauth">{COPY.votesNonAuthoritative}</p>
       {v && (
         <div className="score">
           {VOTE_OPTIONS.map((o) => {
@@ -57,7 +59,7 @@ export function VotePanel({ c, verdict }: { c: CaseDetail; verdict: Verdict | un
           ))}
         </div>
       )}
-      <TxTracker lifecycle={flow.lifecycle} hash={flow.hash} error={flow.error} />
+      <TxTracker flow={flow} />
     </section>
   );
 }

@@ -5,7 +5,7 @@ import { CATEGORIES, COPY, LIMITS } from "@/lib/settleit/constants";
 import { evidenceToJson, validateEvidence, validateQuestion, validateRespondent, validateStatement, validateTitle } from "@/lib/settleit/validation";
 import type { Category, EvidenceDraft, Visibility } from "@/lib/settleit/types";
 import { useWallet } from "@/lib/genlayer/WalletProvider";
-import { createCase, getLastCaseId } from "@/lib/genlayer/contract";
+import { createCaseSpec, getLastCaseId } from "@/lib/genlayer/contract";
 import { useTxFlow } from "@/lib/genlayer/hooks";
 import { CONTRACT_ADDRESS } from "@/lib/genlayer/config";
 import { EvidenceEditor } from "@/components/EvidenceEditor";
@@ -24,7 +24,7 @@ function Wizard() {
   const [d, setD] = useState<Draft>(EMPTY);
   const [ack, setAck] = useState(false);
   const [touched, setTouched] = useState(false);
-  const flow = useTxFlow();
+  const flow = useTxFlow(() => { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } });
 
   useEffect(() => {
     try {
@@ -51,11 +51,10 @@ function Wizard() {
   const submit = async () => {
     if (!w.account) return;
     const acct = w.account;
-    const h = await flow.run(() => createCase(acct, {
+    await flow.start(createCaseSpec(acct, {
       category: d.category, visibility: d.visibility, respondent: d.respondent.trim(), title: d.title.trim(),
       question: d.question.trim(), statement: d.statement.trim(), evidenceJson: evidenceToJson(d.evidence),
     }));
-    if (h) { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } }
   };
 
   useEffect(() => {
@@ -147,13 +146,13 @@ function Wizard() {
             ) : !w.onStudionet ? (
               <button className="btn plasma" onClick={w.switchNetwork}>Switch to StudioNet</button>
             ) : (
-              <button className="btn block" disabled={!ack || flow.busy || !CONTRACT_ADDRESS} onClick={submit}>Sign &amp; file the case</button>
+              <button className="btn block" disabled={!ack || flow.busy || !CONTRACT_ADDRESS} onClick={submit}>Review &amp; file the case</button>
             )}
           </div>
         )}
         {showErr && <p className="err" role="alert">{err}</p>}
       </div>
-      <TxTracker lifecycle={flow.lifecycle} hash={flow.hash} error={flow.error} />
+      <TxTracker flow={flow} />
       <div className="row">
         {step > 0 && <button className="btn ghost" onClick={() => setStep(step - 1)}>Back</button>}
         {step < STEPS.length - 1 && <button className="btn" onClick={next}>Next</button>}

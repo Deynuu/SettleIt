@@ -9,6 +9,8 @@
 
 export type LifecycleStage =
   | "idle"
+  | "preflight" // wallet/chain guard + simulation running, nothing signed
+  | "confirm" // simulation done, waiting for the user to review the plan and confirm
   | "wallet" // waiting for the wallet to approve
   | "submitted" // hash exists, not yet seen by the network
   | "processing" // pending / proposing / committing / revealing
@@ -43,6 +45,26 @@ export const LIFECYCLE_IDLE: Lifecycle = make({
   stage: "idle",
   label: "Not sent",
   detail: "Nothing has been submitted yet.",
+  provisional: false,
+  finalized: false,
+  terminal: false,
+  polling: false,
+});
+
+export const LIFECYCLE_PREFLIGHT: Lifecycle = make({
+  stage: "preflight",
+  label: "Checking",
+  detail: "Checking your wallet network and account, and simulating the action. Nothing is signed yet.",
+  provisional: false,
+  finalized: false,
+  terminal: false,
+  polling: false,
+});
+
+export const LIFECYCLE_CONFIRM: Lifecycle = make({
+  stage: "confirm",
+  label: "Review before signing",
+  detail: "The simulation succeeded. Review the plan and fee information, then confirm to open your wallet.",
   provisional: false,
   finalized: false,
   terminal: false,
@@ -230,6 +252,8 @@ export function trackerStates(l: Lifecycle): { id: string; label: string; state:
   let active = 0;
   switch (l.stage) {
     case "idle":
+    case "preflight":
+    case "confirm":
       active = -1;
       break;
     case "wallet":

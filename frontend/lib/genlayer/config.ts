@@ -16,4 +16,10 @@ export function readContractAddress(raw: string | undefined = process.env.NEXT_P
 
 export const CONTRACT_ADDRESS = readContractAddress();
 
+export const BUILD_COMMIT = process.env.NEXT_PUBLIC_BUILD_COMMIT ?? "local";
+export const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME ?? "";
+export const REPO_URL = "https://github.com/Deynuu/SettleIt";
+export const commitUrl = (sha: string) => `${REPO_URL}/commit/${sha}`;
+export const addressUrl = (a: string) => `${EXPLORER_URL}/address/${a}`;
+
 export const txUrl = (hash: string) => `${EXPLORER_URL}/transactions/${hash}`;
