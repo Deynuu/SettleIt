@@ -79,6 +79,13 @@ class Court:
         self.bob_hex = to_hex(self.bob)
         self.charlie_hex = to_hex(self.charlie)
 
+    def warp(self, stamp):
+        """Set block time. gl.message_raw['datetime'] is what the contract reads."""
+        import sys
+
+        self.vm.warp(stamp)
+        sys.modules["genlayer.gl"].message_raw["datetime"] = stamp
+
     # -- mocks -------------------------------------------------------------
     def mock(self, verdict, pattern=MARKER):
         self.vm.clear_mocks()
