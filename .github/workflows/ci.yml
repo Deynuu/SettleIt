@@ -9,7 +9,10 @@ on:
 env:
   PYTHON_VERSION: "3.12.7"
   NODE_VERSION: "22.12.0"
-  GENVM_VERSION: "v0.6.0-rc8"
+  # gltest (direct mode) downloads its SDK bundle from genlayerlabs/genvm;
+  # genvm-lint validates against genlayerlabs/genvm-manager. Different repos, different tags.
+  GENVM_TEST_VERSION: "v0.2.16"
+  GENVM_LINT_VERSION: "v0.6.0-rc8"
 
 jobs:
   lint-contracts:
@@ -24,7 +27,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: genvm-lint
         env:
-          GENVM_VERSION: ${{ env.GENVM_VERSION }}
+          GENVM_VERSION: ${{ env.GENVM_LINT_VERSION }}
         run: ./scripts/ci/run_with_annotation.sh "genvm-lint" genvm-lint check contracts/settleit.py
 
   test-direct:
@@ -38,6 +41,8 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - name: pytest direct
+        env:
+          GENVM_VERSION: ${{ env.GENVM_TEST_VERSION }}
         run: ./scripts/ci/run_with_annotation.sh "direct tests" pytest tests/direct/ -v
 
   frontend:
