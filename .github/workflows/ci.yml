@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, v2-hardening]
   pull_request:
     branches: [main]
 
@@ -22,7 +22,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.txt
-      - run: genvm-lint check contracts/settleit.py
+      - name: genvm-lint
+        run: ./scripts/ci/run_with_annotation.sh "genvm-lint" genvm-lint check contracts/settleit.py
 
   test-direct:
     name: Direct Mode Tests
@@ -34,7 +35,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.txt
-      - run: pytest tests/direct/ -v
+      - name: pytest direct
+        run: ./scripts/ci/run_with_annotation.sh "direct tests" pytest tests/direct/ -v
 
   frontend:
     name: Frontend (test, typecheck, lint, build)
