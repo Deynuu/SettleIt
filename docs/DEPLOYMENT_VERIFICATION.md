@@ -1,30 +1,27 @@
-# Settleit — Deployment & Verification (StudioNet)
+# Settleit — Deployment & Verification (StudioNet, chain 61999)
 
-**Status: deployed manually via Studio (address in deployments/studionet.json); not yet verified.** The authoring sandbox cannot reach studio.genlayer.com from its shell, so no deployment, schema inspection or live smoke test was run. Nothing below has been executed by the author. Run it and record real values.
+The source of truth is `deployments/studionet.json`. `status` is one of `PENDING_DEPLOYMENT`, `DEPLOYED_UNVERIFIED`, `DEPLOYED_VERIFIED`. CI refuses `DEPLOYED_VERIFIED` unless a passing live-test evidence file for the same address and source hash is committed.
 
+Earlier address `0x7BaDaceAeD80bF571562359E3De02aA1eA8846d8` is **v1** (source sha 0301e264…), superseded and never verified. Do not use it.
+
+## Steps (run by whoever holds the deploy key)
 ```bash
-# NOTE: CLI flags below are from memory of the genlayer CLI; confirm with `genlayer --help` / `genlayer deploy --help`.
-# 0. install
-pip install -r requirements.txt && npm install
-# 1. checks
-genvm-lint check contracts/settleit.py
-pytest tests/direct/ -v
-# 2. deploy
-genlayer network set studionet
-genlayer deploy --contract contracts/settleit.py      # note address + tx hash
-# 3. schema
-genlayer schema <ADDRESS>                              # expect create_case, add_evidence, submit_response, request_verdict, cast_vote + views
-# 4. record
-#   edit deployments/studionet.json (address, tx hash, date, status: "DEPLOYED")
-#   put the address in README.md and frontend/.env.local (NEXT_PUBLIC_CONTRACT_ADDRESS)
+pip install -r requirements.txt
+sha256sum contracts/settleit.py            # must equal contract.sha256 in the manifest
+# 1. Deploy contracts/settleit.py in Studio / `genlayer deploy`; note the address and tx hash.
+# 2. Verify on-chain source + schema and record the deployment (refuses on any mismatch):
+python scripts/record_deployment.py --address 0x<ADDR> --tx-hash 0x<TX>
+#    (add --block-number N --block-time ISO8601 if the RPC record omits them; the manifest marks them as manual)
+# 3. Point the frontend at it: set NEXT_PUBLIC_CONTRACT_ADDRESS in Vercel and frontend/.env.production, then redeploy.
+# 4. Live lifecycle with two throwaway keys (never committed):
+export SETTLEIT_CLAIMANT_KEY=0x...  SETTLEIT_RESPONDENT_KEY=0x...
+python scripts/live_verify.py [--evidence-url https://...]
+# 5. Commit deployments/studionet.json and deployments/evidence/*, update the README "Reviewer verification" section.
 cd frontend && npm run check:address
-# 5. live smoke
-gltest tests/integration/ -v -s --network studionet
-# 6. UI: cd frontend && npm run dev, then follow docs/DEMO_SCRIPT.md
 ```
 
 ## Acceptance
-- Schema lists every method in `contracts/settleit.py`.
-- Smoke test completes create → respond → verdict with real tx hashes (keep them in `deployments/studionet.json`).
-- `npm run check:address` passes (README, manifest, env agree).
-- If deploy fails on the runner hash, port per PROTOCOL_DESIGN "Risks".
+- On-chain code is byte-identical to the repo source and schemas match (recorded in `onChainVerification`).
+- Create → respond → verdict reached FINALIZED with real tx hashes in `liveSmokeTest`.
+- `npm run check:address` passes.
+- Production `/version.json` shows the commit the manifest was recorded against (or a later one that does not change the contract).

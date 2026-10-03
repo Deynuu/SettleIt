@@ -44,6 +44,8 @@ jobs:
         env:
           GENVM_VERSION: ${{ env.GENVM_TEST_VERSION }}
         run: ./scripts/ci/run_with_annotation.sh "direct tests" pytest tests/direct/ -v
+      - name: pytest deployment/verification scripts
+        run: ./scripts/ci/run_with_annotation.sh "script tests" pytest tests/scripts/ -v
 
   frontend:
     name: Frontend (test, typecheck, lint, build)

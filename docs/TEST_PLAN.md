@@ -1,20 +1,20 @@
 # Settleit — Test Plan
 
-| Layer | Command | Status in authoring sandbox |
+Status values below are what has actually been run; see CI for the current commit.
+
+| Layer | Command | Notes |
 |---|---|---|
-| Lint | `genvm-lint check contracts/settleit.py` | Source-level lint clean after fixes; the linter's validate/typecheck layers were **not** run here |
-| Direct | `pytest tests/direct/ -v` | **134 passed** using a locally assembled harness (SDK v0.2.16 runner) |
-| Integration | `gltest tests/integration/ -v -s` | **Not run** (needs StudioNet/Studio). Files compile only |
-| Frontend unit | `cd frontend && npm test` | 3 test groups pass under `tsx --test` |
-| Frontend typecheck | `npm run typecheck` | Passed only against offline stubs; **re-run after `npm install`** |
-| Frontend lint | `npm run lint` | Guardrail script passes |
-| Visual | static SSR render, Playwright at 320/375/430/1280 | no horizontal scroll (found and fixed one overflow) |
+| Contract lint | `genvm-lint check contracts/settleit.py` | CI job `lint-contracts` (genvm-manager tag pinned in the workflow) |
+| Direct | `pytest tests/direct/ -v` | 330 tests locally: lifecycle, authorization, replay, exact deadline boundaries, state transitions, invariants, validator-disagreement matrix per verdict class, malformed/oversized/invalid model output, unavailable/empty/contradictory/ambiguous evidence, prompt injection (claim, response, fetched page), seeded fuzz/property tests, votes never altering verdicts |
+| Scripts | `pytest tests/scripts/ -v` | `record_deployment.py` and `live_verify.py` against fakes (refuse on mismatch, never guess block data) |
+| Frontend | `cd frontend && npm test && npm run typecheck && npm run lint && npm run build` | CI job `frontend` |
+| Manifest | `cd frontend && npm run check:address` | CI job `manifest-consistency` |
+| Integration | `gltest tests/integration/ -v -s` | Needs Studio; not run in CI |
+| Live lifecycle | `python scripts/live_verify.py` | Real StudioNet, two keys; evidence in `deployments/evidence/` |
 
-## Direct tests cover
-create/respond validation, access control, evidence limits and locking, adjudication flow with mocked LLM, malformed/injection outputs, validator agree/disagree matrix, voting rules, views and pagination, pickling.
-
-## Integration (to run)
-`tests/integration/test_settleit.py`: hero "Chicken in the Fridge" lifecycle under real consensus, access control, an ambiguous case. LLM output is real, so assertions check structure and allowed values, not exact prose.
+## Not covered (be explicit)
+- Browser E2E with real wallets has not been run. A mock-wallet browser test is limited to the wallet-guard logic; it does not prove behaviour with MetaMask or any real wallet.
+- Real LLM validator behaviour is exercised only by the live script, not by direct-mode mocks.
 
 ## Manual UI checklist
-Connect → wrong network prompt → create case → open link as respondent → respond → summon jury → provisional shown → Finalized only when reported → vote as third wallet → party blocked from voting → share.
+Connect → wrong network prompt (switch/add) → create case (review plan, confirm) → open link as respondent in a second wallet → respond → request verdict → Accepted shown as provisional → Finalized shown only when reported → state re-read → explorer link works → party blocked from voting → `/verify` page shows address, chain id and build commit.

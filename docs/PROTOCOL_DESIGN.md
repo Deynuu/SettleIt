@@ -13,18 +13,18 @@ Storage uses only GenLayer types (`TreeMap`, `DynArray`, `@allow_storage` datacl
 ### Equivalence rules
 | Case | Agreement requires |
 |---|---|
-| INCONCLUSIVE | both INCONCLUSIVE and evidence quality not STRONG on both |
-| SPLIT | both SPLIT and claimant_fault delta ≤ 15 |
-| CLAIMANT / RESPONDENT | same favoured party, fault delta ≤ 10, evidence quality and confidence within 1 ordinal step, ≥ 1 shared reason code |
+| INCONCLUSIVE | both INCONCLUSIVE with the same `insufficiency_basis`, neither side STRONG evidence |
+| SPLIT | both SPLIT, fault delta ≤ 10, quality/confidence within 1 step, same primary reason |
+| CLAIMANT / RESPONDENT | same favoured party, fault delta ≤ 10, evidence quality and confidence within 1 ordinal step, same primary reason |
 
 ## Prompt-injection defense
-Case text is serialized with `json.dumps` between `CASE_MATERIAL_JSON:` and `END_OF_CASE_MATERIAL`, with rules stating it is untrusted data and instructions inside it must be ignored. Output is schema-validated, so injected text cannot add fields, change enums or force a verdict value outside the allowlist. A remedy token blocklist rejects unsafe remedies. Evidence URLs are never fetched.
+Case text is serialized with `json.dumps` between `CASE_MATERIAL_JSON:` and `END_OF_CASE_MATERIAL`, with rules stating it is untrusted data and instructions inside it must be ignored. Output is schema-validated, so injected text cannot add fields, change enums or force a verdict value outside the allowlist. A remedy token blocklist rejects unsafe remedies. User text goes in `CASE_MATERIAL_JSON`; validator-fetched URL text goes in a separate `FETCHED_EVIDENCE_JSON` block; delimiter tokens are stripped from both. URL evidence is fetched inside the nondeterministic block, hashed per URL and combined, and the digest is stored with the verdict. Unavailable/empty pages fail closed.
 
 ## Errors
 Prefixes `EXPECTED:` (user error), `EXTERNAL:`, `TRANSIENT:` (retryable), `LLM_ERROR:` (model output rejected; nothing stored).
 
 ## Finality
-Writes return a tx hash. The UI polls `getTransaction` and shows only the status the network reports: Accepted = *provisional*, Finalized = final, Undetermined = no consensus (nothing recorded). No appeal countdown is shown or invented. A tx that is decided but whose execution ended `FINISHED_WITH_ERROR` is surfaced as rejected.
+Writes return a tx hash. The UI polls `getTransaction` and shows only the status the network reports: Accepted = *provisional*, Finalized = final, Undetermined = no consensus (nothing recorded). No appeal countdown is shown or invented. Separately, the contract offers one evidence-bound review per case (new evidence required); the review verdict is stored apart from the original. A tx that is decided but whose execution ended `FINISHED_WITH_ERROR` is surfaced as rejected.
 
 ## Risks
 - Runner-hash pin may not match StudioNet's current runner; a port to the newer `import genlayer as gl` API may be needed.

@@ -1,12 +1,51 @@
 {
+  "schemaVersion": 2,
   "network": "studionet",
   "chainId": 61999,
   "rpcUrl": "https://studio.genlayer.com/api",
-  "status": "DEPLOYED_UNVERIFIED",
-  "contractAddress": "0x7BaDaceAeD80bF571562359E3De02aA1eA8846d8",
-  "deployTxHash": null,
-  "deployedAt": null,
-  "contractFile": "contracts/settleit.py",
-  "contractSha256": "0301e264eaaf0efec89c2c57be018d30d83c362b84a5561c9305253b20bb6629",
-  "note": "Address supplied by the user after a manual deploy via Studio. deployTxHash not provided (left null, never invented). Not yet verified by schema inspection or live smoke test."
+  "status": "PENDING_DEPLOYMENT",
+  "statusNote": "Contract v2 is written, linted and tested locally and in CI, but has not been deployed. No address, transaction hash, block or time is recorded because none exists yet; they are never guessed. Run scripts/record_deployment.py after deploying (see README: Reviewer verification).",
+  "contract": {
+    "file": "contracts/settleit.py",
+    "version": "2.0.0",
+    "sha256": "70d49f97d72e916cae7717be5e66f1142ca69f98e3ca7e46dd80fd7d6345d5f2"
+  },
+  "deployment": {
+    "address": null,
+    "txHash": null,
+    "blockNumber": null,
+    "blockTimestamp": null,
+    "deployer": null,
+    "sourceCommit": null,
+    "recordedAt": null
+  },
+  "onChainVerification": {
+    "codeSha256Matches": null,
+    "schemaMatches": null,
+    "protocolInfoMatches": null,
+    "verifiedAt": null,
+    "tool": "scripts/record_deployment.py"
+  },
+  "liveSmokeTest": {
+    "status": "NOT_RUN",
+    "runAt": null,
+    "evidenceFile": null,
+    "tool": "scripts/live_verify.py",
+    "txHashes": {}
+  },
+  "frontend": {
+    "productionUrl": "https://settleit-deynu.vercel.app",
+    "vercelProjectId": "prj_SJnC0nV964tADgMxg0SaLh9p0o9r",
+    "addressEnvVar": "NEXT_PUBLIC_CONTRACT_ADDRESS",
+    "versionEndpoint": "/version.json"
+  },
+  "supersedes": [
+    {
+      "version": "1.0.0",
+      "address": "0x7BaDaceAeD80bF571562359E3De02aA1eA8846d8",
+      "sha256": "0301e264eaaf0efec89c2c57be018d30d83c362b84a5561c9305253b20bb6629",
+      "status": "SUPERSEDED_NEVER_VERIFIED",
+      "note": "Deployed manually by the repository owner; the deployment transaction hash was never provided, so this deployment was never verified. v2 changes the ABI and must be redeployed."
+    }
+  ]
 }
