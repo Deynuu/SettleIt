@@ -416,6 +416,9 @@ def _normalize_verdict(raw) -> dict:
     secondary = [c for c in codes if c != primary][: MAX_REASON_CODES - 1]
 
     if favored == "INCONCLUSIVE":
+        if quality == "STRONG":
+            # "strong evidence" and "cannot judge" contradict each other
+            _fail("LLM_ERROR:INVALID_SCHEMA")
         basis = _enum(obj.get("insufficiency_basis"), INSUFFICIENCY_BASES)
     else:
         basis = "NONE"
